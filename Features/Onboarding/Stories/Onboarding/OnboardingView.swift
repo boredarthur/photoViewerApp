@@ -50,7 +50,7 @@ class OnboardingView: BaseView<OnboardingViewState> {
             equalTo: safeAreaLayoutGuide.trailingAnchor,
             constant: -24
         ).isActive = true
-        continuationButton.heightAnchor.constraint(equalToConstant: 52).isActive = true
+        continuationButton.height(52)
         continuationButton.topAnchor.constraint(
             equalTo: pageControl.bottomAnchor,
             constant: 30

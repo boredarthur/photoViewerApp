@@ -8,10 +8,6 @@ class PhotoLibraryManager {
     public static let shared = PhotoLibraryManager()
     private init() {}
 
-    private var userCollections: PHFetchResult<PHAssetCollection> = {
-        return PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
-    }()
-
     private var allPhotosAssets: PHFetchResult<PHAsset> = {
         var fetchedAssets = PHFetchResult<PHAsset>()
         let options = PHFetchOptions()
@@ -25,7 +21,8 @@ class PhotoLibraryManager {
         return await withCheckedContinuation { continuation in
             var result = [String: Int]()
 
-            userCollections.enumerateObjects { [weak self] collection, _, _ in
+            PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
+                .enumerateObjects { [weak self] collection, _, _ in
                 guard let self = self else { return }
                 let requestOptions = PHImageRequestOptions()
                 requestOptions.isSynchronous = true
@@ -44,7 +41,8 @@ class PhotoLibraryManager {
 
     func fetchUserCollections() -> (PHFetchResult<PHAssetCollection>, [String: UIImage]) {
         let userCollectionsThumbnails = self.fetchUserCollectionsThumbnails()
-        return (userCollections, userCollectionsThumbnails)
+        return (PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil),
+                userCollectionsThumbnails)
     }
 
     func fetchAllPhotosAssetsWithThumbnail() async -> (PHFetchResult<PHAsset>, UIImage?) {
@@ -130,7 +128,8 @@ class PhotoLibraryManager {
     private func fetchUserCollectionsThumbnails() -> [String: UIImage] {
         var thumbnailsResult = [String: UIImage]()
 
-        userCollections.enumerateObjects { [weak self] collection, _, _ in
+        PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
+            .enumerateObjects { [weak self] collection, _, _ in
             guard let assetsResult = self?.fetchAssets(from: collection) else { return }
             if assetsResult.count > 0 {
                 let asset = assetsResult.object(at: 0)

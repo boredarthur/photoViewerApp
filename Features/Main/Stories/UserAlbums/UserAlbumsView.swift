@@ -59,6 +59,8 @@ class UserAlbumsView: BaseView<UserAlbumsViewState> {
                 stopLoading()
             case .loading:
                 startLoading()
+            default:
+                break
             }
         }
     }

@@ -37,8 +37,7 @@ class UserAlbumsTableViewCell: BaseTableViewCell {
             constant: 15
         ).isActive = true
         albumImageView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
-        albumImageView.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        albumImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        albumImageView.size(40)
 
         albumNameLabel.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 10).isActive = true
         albumNameLabel.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true

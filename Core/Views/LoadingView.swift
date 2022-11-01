@@ -19,11 +19,8 @@ class LoadingView: UIView {
         cameraImageView.contentMode = .scaleAspectFit
         cameraImageView.tintColor = UIColor(named: "contentAccentColor")!
         addSubview(cameraImageView)
-        cameraImageView.translatesAutoresizingMaskIntoConstraints = false
-        cameraImageView.heightAnchor.constraint(equalToConstant: 100).isActive = true
-        cameraImageView.widthAnchor.constraint(equalToConstant: 100).isActive = true
-        cameraImageView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        cameraImageView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        cameraImageView.placeInCenter(of: self)
+        cameraImageView.size(100)
 
         self.cameraImageView = cameraImageView
     }

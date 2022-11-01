@@ -48,10 +48,7 @@ class UserAlbumsViewModel: BaseViewModel<UserAlbumsViewIntent, UserAlbumsViewSta
     }
 
     private func createCollection() {
-        updateState(state: self.state?.mutate(loadingStatus: .loading))
-        UserAlbumsPrompt.shared.showPromptForCreatingNewCollection { [weak self] in
-            self?.updateState(state: self?.state?.mutate(loadingStatus: .idle))
-        }
+        UserAlbumsPrompt.shared.showPromptForCreatingNewCollection()
     }
 
     private func removeCollection(with title: String) {

@@ -45,4 +45,23 @@ extension UIView {
             constant: -verticalPadding
         ).isActive = true
     }
+
+    func placeInCenter(of container: UIView) {
+        self.translatesAutoresizingMaskIntoConstraints = false
+        centerXAnchor.constraint(equalTo: container.safeAreaLayoutGuide.centerXAnchor).isActive = true
+        centerYAnchor.constraint(equalTo: container.safeAreaLayoutGuide.centerYAnchor).isActive = true
+    }
+
+    func height(_ value: CGFloat) {
+        heightAnchor.constraint(equalToConstant: value).isActive = true
+    }
+
+    func width(_ value: CGFloat) {
+        widthAnchor.constraint(equalToConstant: value).isActive = true
+    }
+
+    func size(_ value: CGFloat) {
+        height(value)
+        width(value)
+    }
 }

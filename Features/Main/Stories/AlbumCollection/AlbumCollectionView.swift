@@ -8,6 +8,11 @@ class AlbumCollectionView: BaseView<AlbumCollectionViewState> {
     private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
     private let loadingView = LoadingView()
 
+    // Empty state
+    private let stackView = UIStackView()
+    private let questionMarkImageView = UIImageView()
+    private let emptyTitleLabel = UILabel()
+
     private var selectedIndexPath: IndexPath!
 
     private var items = [AlbumCollectionItemModel]() {
@@ -26,15 +31,24 @@ class AlbumCollectionView: BaseView<AlbumCollectionViewState> {
     private func configureSubviews() {
         addSubview(collectionView)
         addSubview(loadingView)
+        addSubview(stackView)
+
+        collectionView.fill(container: self, padding: 10)
 
         loadingView.fillIgnoreSafeArea(container: self)
         loadingView.isHidden = true
-        collectionView.fill(container: self, padding: 10)
+
+        stackView.placeInCenter(of: self)
+        stackView.height(180)
+        stackView.isHidden = true
     }
 
     private func applyStyles() {
         viewStyle(self)
         collectionViewStyle(collectionView)
+        stackViewStyle(stackView)
+        questionMarkImageView(questionMarkImageView)
+        emptyTitleLabelStyle(emptyTitleLabel)
     }
 
     override func render(state: AlbumCollectionViewState) {
@@ -44,10 +58,22 @@ class AlbumCollectionView: BaseView<AlbumCollectionViewState> {
             switch loadingStatus {
             case .idle:
                 stopLoading()
+                hideEmptyState()
             case .loading:
                 startLoading()
+            case .empty:
+                stopLoading()
+                showEmptyState()
             }
         }
+    }
+
+    private func showEmptyState() {
+        stackView.isHidden = false
+    }
+
+    private func hideEmptyState() {
+        stackView.isHidden = true
     }
 
     private func startLoading() {
@@ -181,5 +207,28 @@ extension AlbumCollectionView {
         flowLayout.minimumInteritemSpacing = 10
         flowLayout.minimumLineSpacing = 10
         view.collectionViewLayout = flowLayout
+    }
+
+    private func stackViewStyle(_ view: UIStackView) {
+        view.addArrangedSubview(questionMarkImageView)
+        view.addArrangedSubview(emptyTitleLabel)
+
+        view.distribution = .fillEqually
+        view.alignment = .center
+        view.axis = .vertical
+    }
+
+    private func questionMarkImageView(_ view: UIImageView) {
+        view.contentMode = .scaleAspectFit
+        view.tintColor = UIColor(named: "contentAccentColor")!
+        let config = UIImage.SymbolConfiguration(font: UIFont.bold(of: 62))
+        view.image = UIImage(systemName: "questionmark", withConfiguration: config)
+    }
+
+    private func emptyTitleLabelStyle(_ view: UILabel) {
+        view.text = "There is nothing in here yet"
+        view.font = UIFont.medium(of: 22)
+        view.numberOfLines = 0
+        view.textColor = UIColor(named: "smoke45")
     }
 }

@@ -35,7 +35,7 @@ class OnboardingCollectionViewCell: BaseCollectionViewCell {
         imageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 28).isActive = true
         imageView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -28).isActive = true
         imageView.topAnchor.constraint(equalTo: topAnchor, constant: 60).isActive = true
-        imageView.heightAnchor.constraint(equalToConstant: 320).isActive = true
+        imageView.height(320)
 
         stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 28).isActive = true
         stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -28).isActive = true

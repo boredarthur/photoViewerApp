@@ -34,7 +34,14 @@ class AlbumCollectionViewModel: BaseViewModel<AlbumCollectionViewIntent, AlbumCo
             self.currentIndex = newIndex + 1 // Fetching next 17 photos
         }.sink { [weak self] items in
             guard let self = self else { return }
-            guard let items = items else { return }
+            guard let items = items else {
+                if self.items.count == 0 {
+                    self.updateState(state: self.state?.mutate(
+                        loadingStatus: .empty
+                    ))
+                }
+                return
+            }
             items.forEach { self.items.append($0) }
             self.updateState(state: self.state?.mutate(
                 loadingStatus: .idle,
