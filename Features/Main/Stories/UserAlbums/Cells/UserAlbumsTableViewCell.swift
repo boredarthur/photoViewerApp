@@ -72,13 +72,13 @@ extension UserAlbumsTableViewCell {
         view.clipsToBounds = true
         view.layer.cornerRadius = 4.0
         view.layer.masksToBounds = true
-        view.image = model.image
+        view.image = model.previewPhoto
         view.tintColor = UIColor(named: "contentAccentColor")
     }
 
     private func albumNameLabelStyle(_ view: UILabel) {
         view.font = UIFont.regular(of: 18)
-        view.text = model.title
+        view.text = model.collection != nil ? model.collection?.localizedTitle : "All Photos"
         view.textColor = .white
     }
 

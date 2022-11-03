@@ -2,5 +2,5 @@ import Foundation
 import Photos
 
 struct AlbumCollectionViewConfiguration {
-    var collectionTitle: String
+    var collection: PHAssetCollection?
 }

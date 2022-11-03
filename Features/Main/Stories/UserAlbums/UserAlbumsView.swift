@@ -101,7 +101,7 @@ extension UserAlbumsView: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        delegate?.openCollection(with: items[indexPath.row].title)
+        delegate?.openCollection(items[indexPath.row].collection)
     }
 
     func tableView(
@@ -112,7 +112,7 @@ extension UserAlbumsView: UITableViewDelegate, UITableViewDataSource {
             style: .destructive,
             title: "Delete") { [weak self] _, _, completion in
                 guard let self = self else { return }
-                self.delegate?.removeCollection(with: self.items[indexPath.row].title)
+                self.delegate?.removeCollection(self.items[indexPath.row].collection!)
                 completion(true)
             }
         remove.backgroundColor = UIColor(named: "contentAccentColor")
@@ -131,7 +131,7 @@ extension UserAlbumsView: UITableViewDelegate, UITableViewDataSource {
             image: UIImage(systemName: "trash.fill")!
         ) { [weak self] _ in
             guard let self = self else { return }
-            self.delegate?.removeCollection(with: self.items[indexPath.row].title)
+            self.delegate?.removeCollection(self.items[indexPath.row].collection!)
         }
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
@@ -147,7 +147,11 @@ extension UserAlbumsView: UITableViewDelegate, UITableViewDataSource {
 extension UserAlbumsView: PHPhotoLibraryChangeObserver {
 
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        delegate?.refreshCollections()
+        DispatchQueue.main.sync {
+            if let _ = changeInstance.changeDetails(for: PhotoLibraryManager.shared.getUserCollections()) {
+                delegate?.reloadData()
+            }
+        }
     }
 }
 

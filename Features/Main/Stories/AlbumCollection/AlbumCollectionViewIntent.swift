@@ -1,9 +1,9 @@
 import Foundation
+import Photos
 import UIKit
 
 enum AlbumCollectionViewIntent: BaseViewIntent {
     case initialize
-    case fetchAssets(collectionTitle: String)
-    case openDetailedPage(photo: UIImage, title: String)
-    case removeAsset(localIdentifier: String)
+    case openDetailedPage(asset: PHAsset)
+    case removeAsset(asset: PHAsset)
 }

@@ -16,7 +16,7 @@ class UserAlbumsPrompt: BasePrompt {
         let sumbitAction = UIAlertAction(title: "Create", style: .default) { [weak self] _ in
             guard let self = self else { return }
             guard let title = alert.textFields?[0].text,
-                  title.range(of: ".*[^A-Za-z0-9].*", options: .regularExpression) == nil
+                  title.range(of: ".*[^A-Za-z0-9_ ].*", options: .regularExpression) == nil
             else {
                 self.showPromptForFetchingErrorInvalidName("We support only letters, numbers and symbols. Sorry!")
                 return

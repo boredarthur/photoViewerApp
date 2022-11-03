@@ -6,7 +6,6 @@ class AlbumCollectionView: BaseView<AlbumCollectionViewState> {
     weak var delegate: AlbumCollectionViewDelegate?
 
     private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
-    private let loadingView = LoadingView()
 
     // Empty state
     private let stackView = UIStackView()
@@ -14,8 +13,9 @@ class AlbumCollectionView: BaseView<AlbumCollectionViewState> {
     private let emptyTitleLabel = UILabel()
 
     private var selectedIndexPath: IndexPath!
+    private var previousPreheatRect = CGRect.zero
 
-    private var items = [AlbumCollectionItemModel]() {
+    var fetchResult: PHFetchResult<PHAsset> = PHFetchResult<PHAsset>() {
         didSet {
             collectionView.reloadData()
         }
@@ -25,18 +25,16 @@ class AlbumCollectionView: BaseView<AlbumCollectionViewState> {
         super.viewDidLoad()
         configureSubviews()
         applyStyles()
+
+        previousPreheatRect = .zero
         PHPhotoLibrary.shared().register(self)
     }
 
     private func configureSubviews() {
         addSubview(collectionView)
-        addSubview(loadingView)
         addSubview(stackView)
 
         collectionView.fill(container: self, padding: 10)
-
-        loadingView.fillIgnoreSafeArea(container: self)
-        loadingView.isHidden = true
 
         stackView.placeInCenter(of: self)
         stackView.height(180)
@@ -53,40 +51,11 @@ class AlbumCollectionView: BaseView<AlbumCollectionViewState> {
 
     override func render(state: AlbumCollectionViewState) {
         super.render(state: state)
-        self.items = state.items
-        if let loadingStatus = state.loadingStatus {
-            switch loadingStatus {
-            case .idle:
-                stopLoading()
-                hideEmptyState()
-            case .loading:
-                startLoading()
-            case .empty:
-                stopLoading()
-                showEmptyState()
-            }
+        self.fetchResult = state.fetchResult
+
+        if state.loadingStatus == .empty {
+            showEmptyState()
         }
-    }
-
-    private func showEmptyState() {
-        stackView.isHidden = false
-    }
-
-    private func hideEmptyState() {
-        stackView.isHidden = true
-    }
-
-    private func startLoading() {
-        loadingView.isHidden = false
-        collectionView.isHidden = true
-        loadingView.configureView()
-        loadingView.animate()
-    }
-
-    private func stopLoading() {
-        loadingView.stopAnimating()
-        loadingView.isHidden = true
-        collectionView.isHidden = false
     }
 
     func getCellImageView() -> UIImageView? {
@@ -97,8 +66,78 @@ class AlbumCollectionView: BaseView<AlbumCollectionViewState> {
         return nil
     }
 
-    deinit {
-        PHPhotoLibrary.shared().unregisterChangeObserver(self)
+    private func showEmptyState() {
+        stackView.isHidden = false
+    }
+
+    private func updateAssets() {
+        let visibleRectangle = CGRect(origin: collectionView.contentOffset, size: collectionView.bounds.size)
+        let preheatRectangle = visibleRectangle.insetBy(dx: 0, dy: -0.5 * visibleRectangle.height)
+
+        let delta = abs(preheatRectangle.midY - previousPreheatRect.midY)
+        guard delta > bounds.height / 3 else { return }
+
+        let (addedRectangles, removedRectangles) = differencesBetweenRects(previousPreheatRect, preheatRectangle)
+        let addedAssets = addedRectangles
+            .flatMap { rect in
+                collectionView.indexPathsForElements(in: rect)
+            }
+            .map { indexPath in
+                fetchResult.object(at: indexPath.item)
+            }
+        let removedAssets = removedRectangles
+            .flatMap { rect in
+                collectionView.indexPathsForElements(in: rect)
+            }
+            .map { indexPath in
+                fetchResult.object(at: indexPath.item)
+            }
+        PhotoLibraryManager.shared.startCachingImages(for: addedAssets)
+        PhotoLibraryManager.shared.stopCachingImages(for: removedAssets)
+
+        previousPreheatRect = preheatRectangle
+    }
+
+    private func differencesBetweenRects(_ old: CGRect, _ new: CGRect) -> (added: [CGRect], removed: [CGRect]) {
+        if old.intersects(new) {
+            var added = [CGRect]()
+            if new.maxY > old.maxY {
+                added += [CGRect(
+                    x: new.origin.x,
+                    y: old.maxY,
+                    width: new.width,
+                    height: new.maxY - old.maxY
+                )]
+            }
+            if old.minY > new.minY {
+                added += [CGRect(
+                    x: new.origin.x,
+                    y: new.minY,
+                    width: new.width,
+                    height: old.minY - new.minY
+                )]
+            }
+            var removed = [CGRect]()
+            if new.maxY < old.maxY {
+                removed += [CGRect(
+                    x: new.origin.x,
+                    y: new.maxY,
+                    width: new.width,
+                    height: old.maxY - new.maxY
+                )]
+            }
+            if old.minY < new.minY {
+                removed += [CGRect(
+                    x: new.origin.x,
+                    y: old.minY,
+                    width: new.width,
+                    height: new.minY - old.minY
+                )]
+            }
+            return (added, removed)
+        } else {
+            return ([new], [old])
+        }
     }
 }
 
@@ -106,37 +145,34 @@ extension AlbumCollectionView: UICollectionViewDelegate, UICollectionViewDataSou
                                UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return items.count
+        return fetchResult.count
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        if let cell = collectionView.dequeueReusableCell(
+        guard let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: AlbumCollectionViewCell.identifier,
             for: indexPath
-        ) as? AlbumCollectionViewCell {
-            cell.configure(with: items[indexPath.row])
-            return cell
+        ) as? AlbumCollectionViewCell else {
+            return UICollectionViewCell()
         }
-        return UICollectionViewCell()
-    }
 
-    func collectionView(
-        _ collectionView: UICollectionView,
-        willDisplay cell: UICollectionViewCell,
-        forItemAt indexPath: IndexPath
-    ) {
-        if indexPath.row == items.count - 4 {
-            delegate?.refreshAssets()
-        }
+        let asset = fetchResult.object(at: indexPath.item)
+        cell.configure(with: AlbumCollectionItemModel(
+            image: PhotoLibraryManager.shared.getThumbnailImageForAsset(asset, with: asset.localIdentifier),
+            isEdited: asset.isEdited(),
+            isRaw: asset.isRAW()
+        ))
+
+        return cell
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         self.selectedIndexPath = indexPath
-        delegate?.openDetailPage(for: items[indexPath.row].image, items[indexPath.row].title)
+        delegate?.openDetailPage(with: fetchResult.object(at: indexPath.item))
     }
 
     func collectionView(
@@ -160,19 +196,52 @@ extension AlbumCollectionView: UICollectionViewDelegate, UICollectionViewDataSou
             image: UIImage(systemName: "trash.fill")!
         ) { [weak self] _ in
             guard let self = self else { return }
-            self.delegate?.removeAsset(with: self.items[indexPaths.first!.row].localIdentifier)
+            self.delegate?.removeAsset(self.fetchResult.object(at: indexPaths.first!.item))
         }
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
             UIMenu(title: "Actions", children: [remove])
         }
     }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        updateAssets()
+    }
 }
 
 extension AlbumCollectionView: PHPhotoLibraryChangeObserver {
 
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        delegate?.refreshAssets()
+        guard let changes = changeInstance.changeDetails(for: fetchResult) else { return }
+
+        DispatchQueue.main.sync {
+            fetchResult = changes.fetchResultAfterChanges
+
+            if changes.hasIncrementalChanges {
+                collectionView.performBatchUpdates {
+                    if let removed = changes.removedIndexes, !removed.isEmpty {
+                        collectionView.deleteItems(at: removed.map {
+                            IndexPath(item: $0, section: 0)
+                        })
+                    }
+
+                    changes.enumerateMoves { [weak self] fromidx, toidx in
+                        self?.collectionView.moveItem(
+                            at: IndexPath(item: fromidx, section: 0),
+                            to: IndexPath(item: toidx, section: 0)
+                        )
+                    }
+                }
+
+                if let changed = changes.changedIndexes, !changed.isEmpty {
+                    collectionView.reloadItems(at: changed.map {
+                        IndexPath(item: $0, section: 0)
+                    })
+                }
+            } else {
+                collectionView.reloadData()
+            }
+        }
     }
 }
 

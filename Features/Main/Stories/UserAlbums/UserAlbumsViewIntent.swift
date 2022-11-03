@@ -1,8 +1,9 @@
 import Foundation
+import Photos
 
 enum UserAlbumsViewIntent: BaseViewIntent {
     case initialize
-    case openCollection(title: String)
+    case openCollection(collection: PHAssetCollection?)
     case createCollection
-    case removeCollection(title: String)
+    case removeCollection(collection: PHAssetCollection)
 }

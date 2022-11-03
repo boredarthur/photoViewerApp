@@ -1,4 +1,5 @@
 import UIKit
+import Photos
 
 class AlbumCollectionViewController: BaseViewController<AlbumCollectionView, AlbumCollectionViewIntent,
                                      AlbumCollectionViewState, AlbumCollectionViewModel> {
@@ -9,13 +10,17 @@ class AlbumCollectionViewController: BaseViewController<AlbumCollectionView, Alb
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationItem()
+        viewModel.collection = configuration.collection
         viewModel.sendIntent(.initialize)
-        viewModel.sendIntent(.fetchAssets(collectionTitle: configuration.collectionTitle  ))
         getView().delegate = self
     }
 
     private func setupNavigationItem() {
-        navigationItem.title = configuration.collectionTitle
+        if let title = configuration.collection?.localizedTitle {
+            navigationItem.title = title
+        } else {
+            navigationItem.title = "All Photos"
+        }
         navigationItem.largeTitleDisplayMode = .always
         navigationController?.navigationBar.prefersLargeTitles = true
     }
@@ -28,16 +33,12 @@ class AlbumCollectionViewController: BaseViewController<AlbumCollectionView, Alb
 
 extension AlbumCollectionViewController: AlbumCollectionViewDelegate {
 
-    func openDetailPage(for photo: UIImage, _ title: String) {
-        viewModel.sendIntent(.openDetailedPage(photo: photo, title: title))
+    func openDetailPage(with asset: PHAsset) {
+        viewModel.sendIntent(.openDetailedPage(asset: asset))
     }
 
-    func removeAsset(with localIdentifier: String) {
-        viewModel.sendIntent(.removeAsset(localIdentifier: localIdentifier))
-    }
-
-    func refreshAssets() {
-        viewModel.sendIntent(.fetchAssets(collectionTitle: configuration.collectionTitle))
+    func removeAsset(_ asset: PHAsset) {
+        viewModel.sendIntent(.removeAsset(asset: asset))
     }
 
     func dismiss() {

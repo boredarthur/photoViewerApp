@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import Photos
 import UIKit
 
 class UserAlbumsViewModel: BaseViewModel<UserAlbumsViewIntent, UserAlbumsViewState> {
@@ -9,31 +10,28 @@ class UserAlbumsViewModel: BaseViewModel<UserAlbumsViewIntent, UserAlbumsViewSta
     override func sendIntent(_ intent: UserAlbumsViewIntent) {
         switch intent {
         case .initialize:
-            Task { await initialize() }
-        case .openCollection(let title):
-            openCollection(with: title)
+            initialize()
+        case .openCollection(let collection):
+            openCollection(collection)
         case .createCollection:
             createCollection()
-        case .removeCollection(let title):
-            removeCollection(with: title)
+        case .removeCollection(let collection):
+            removeCollection(collection)
         }
     }
 
-    private func initialize() async {
+    private func initialize() {
         updateState(state: UserAlbumsViewState(
             loadingStatus: .loading
         ))
 
-        let (allPhotosAssets, allPhotosThumbnail) = await PhotoLibraryManager.shared.fetchAllPhotosAssetsWithThumbnail()
-        let (userCollections, userCollectionsThumbnails) = PhotoLibraryManager.shared.fetchUserCollections()
-        let photosCountForCollections = await PhotoLibraryManager.shared.fetchAssetsCountForCollections()
+        PhotoLibraryManager.shared.updateUserCollections()
+        let allPhotosAssets = PhotoLibraryManager.shared.getAllPhotosAssets()
+        let userCollections = PhotoLibraryManager.shared.getUserCollections()
 
         UserAlbumsTableItemFactory.shared.getItems(
             allPhotosAssets,
-            allPhotosThumbnail,
-            userCollections,
-            userCollectionsThumbnails,
-            photosCountForCollections
+            userCollections
         ).sink { [weak self] items in
             guard let self = self else { return }
             self.updateState(state: self.state?.mutate(
@@ -43,17 +41,17 @@ class UserAlbumsViewModel: BaseViewModel<UserAlbumsViewIntent, UserAlbumsViewSta
         }.store(in: &cancellables)
     }
 
-    private func openCollection(with title: String) {
-        MainRouter.shared.openCollection(with: title)
+    private func openCollection(_ collection: PHAssetCollection?) {
+        MainRouter.shared.openCollection(collection)
     }
 
     private func createCollection() {
         UserAlbumsPrompt.shared.showPromptForCreatingNewCollection()
     }
 
-    private func removeCollection(with title: String) {
+    private func removeCollection(_ collection: PHAssetCollection) {
         do {
-            try PhotoLibraryManager.shared.removeCollection(with: title)
+            try PhotoLibraryManager.shared.removeCollection(collection)
         } catch {
             if let error = error as? FetchError {
                 switch error {

@@ -3,13 +3,13 @@ import UIKit
 
 class AlbumCollectionViewCell: BaseCollectionViewCell {
 
+    static let identifier = "AlbumCollectionViewCell"
+    var model: AlbumCollectionItemModel!
+    var representedAssetIdentifier: String!
+
     let imageView = UIImageView()
     private let modifiedLabel = UILabel()
     private let rawLabel = UILabel()
-
-    static let identifier = "AlbumCollectionViewCell"
-
-    var model: AlbumCollectionItemModel!
 
     func configure(with model: AlbumCollectionItemModel) {
         self.model = model

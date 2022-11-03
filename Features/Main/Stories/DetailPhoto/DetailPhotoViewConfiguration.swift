@@ -1,7 +1,6 @@
 import Foundation
-import UIKit
+import Photos
 
 struct DetailPhotoViewConfiguration {
-    var image: UIImage
-    var title: String
+    var asset: PHAsset
 }

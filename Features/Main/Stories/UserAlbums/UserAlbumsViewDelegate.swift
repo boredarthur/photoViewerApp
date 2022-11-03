@@ -1,7 +1,8 @@
 import Foundation
+import Photos
 
 protocol UserAlbumsViewDelegate: AnyObject {
-    func openCollection(with title: String)
-    func refreshCollections()
-    func removeCollection(with title: String)
+    func reloadData()
+    func openCollection(_ collection: PHAssetCollection?)
+    func removeCollection(_ collection: PHAssetCollection)
 }

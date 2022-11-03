@@ -1,4 +1,5 @@
 import UIKit
+import Photos
 
 class UserAlbumsViewController: BaseViewController<UserAlbumsView, UserAlbumsViewIntent,
                                 UserAlbumsViewState, UserAlbumsViewModel> {
@@ -29,15 +30,15 @@ extension UserAlbumsViewController {
 
 extension UserAlbumsViewController: UserAlbumsViewDelegate {
 
-    func openCollection(with title: String) {
-        viewModel.sendIntent(.openCollection(title: title))
-    }
-
-    func refreshCollections() {
+    func reloadData() {
         viewModel.sendIntent(.initialize)
     }
 
-    func removeCollection(with title: String) {
-        viewModel.sendIntent(.removeCollection(title: title))
+    func openCollection(_ collection: PHAssetCollection?) {
+        viewModel.sendIntent(.openCollection(collection: collection))
+    }
+
+    func removeCollection(_ collection: PHAssetCollection) {
+        viewModel.sendIntent(.removeCollection(collection: collection))
     }
 }

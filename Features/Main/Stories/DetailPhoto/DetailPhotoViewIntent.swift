@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
+import Photos
 
 enum DetailPhotoViewIntent: BaseViewIntent {
-    case initialize(image: UIImage)
+    case initialize(asset: PHAsset)
 }

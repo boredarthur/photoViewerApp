@@ -1,4 +1,5 @@
 import UIKit
+import Photos
 
 class MainRouter: BaseRouter {
 
@@ -51,15 +52,15 @@ class MainRouter: BaseRouter {
         }
     }
 
-    func openCollection(with title: String) {
+    func openCollection(_ collection: PHAssetCollection?) {
         let controller = AlbumCollectionViewController()
-        controller.configuration = AlbumCollectionViewConfiguration(collectionTitle: title)
+        controller.configuration = AlbumCollectionViewConfiguration(collection: collection)
         show(controller)
     }
 
-    func openDetailedPhoto(with image: UIImage, _ title: String) {
+    func openDetailedPhoto(with asset: PHAsset) {
         let controller = DetailPhotoViewController()
-        controller.configuration = DetailPhotoViewConfiguration(image: image, title: title)
+        controller.configuration = DetailPhotoViewConfiguration(asset: asset)
         show(controller)
     }
 }

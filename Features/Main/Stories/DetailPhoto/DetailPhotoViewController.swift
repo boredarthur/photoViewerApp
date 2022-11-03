@@ -9,13 +9,13 @@ class DetailPhotoViewController: BaseViewController<DetailPhotoView, DetailPhoto
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigation()
-        viewModel.sendIntent(.initialize(image: configuration.image))
+        viewModel.sendIntent(.initialize(asset: configuration.asset))
         getView().delegate = self
     }
 
     private func setupNavigation() {
         navigationController?.delegate = transitionDelegate
-        navigationItem.title = configuration.title
+        navigationItem.title = configuration.asset.title
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
 }
