@@ -48,13 +48,17 @@ class PhotoLibraryManager: NSObject {
         }
     }
 
-    func getThumbnailImageForAsset(_ asset: PHAsset, with representedAssetIdentifier: String) -> UIImage {
+    func getThumbnailImageForAsset(
+        _ asset: PHAsset,
+        with representedAssetIdentifier: String,
+        onCompletion: @escaping ((UIImage) -> Void)
+    ) {
         var thumbnailImage: UIImage!
 
         let requestOptions = PHImageRequestOptions()
         requestOptions.resizeMode = .fast
         requestOptions.deliveryMode = .highQualityFormat
-        requestOptions.isSynchronous = true
+        requestOptions.isSynchronous = false
 
         imageManager.requestImage(
             for: asset,
@@ -64,8 +68,8 @@ class PhotoLibraryManager: NSObject {
                 if representedAssetIdentifier == asset.localIdentifier {
                     thumbnailImage = image
                 }
+                onCompletion(thumbnailImage)
             }
-        return thumbnailImage
     }
 
     func startCachingImages(for assets: [PHAsset]) {

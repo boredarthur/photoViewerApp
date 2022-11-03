@@ -126,7 +126,8 @@ extension ZoomTransitionDelegate: UIViewControllerAnimatedTransitioning {
                         viewsInForeground: (foregoundImageView, foregoundImageView),
                         snapshotViews: (imageViewSnapshot, imageViewSnapshot)
                     )
-                }) { _ in 
+                },
+                completion: { _ in
                     backgroundViewController.view.transform = .identity
                     imageViewSnapshot.removeFromSuperview()
                     backgroundImageView.isHidden = false
@@ -134,7 +135,7 @@ extension ZoomTransitionDelegate: UIViewControllerAnimatedTransitioning {
                     foregroundViewController.view.backgroundColor = foregroundViewBackgroundColor
 
                     transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
-                }
+                })
         }
     }
 }

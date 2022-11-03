@@ -148,7 +148,7 @@ extension UserAlbumsView: PHPhotoLibraryChangeObserver {
 
     func photoLibraryDidChange(_ changeInstance: PHChange) {
         DispatchQueue.main.sync {
-            if let _ = changeInstance.changeDetails(for: PhotoLibraryManager.shared.getUserCollections()) {
+            if changeInstance.changeDetails(for: PhotoLibraryManager.shared.getUserCollections()) != nil {
                 delegate?.reloadData()
             }
         }

@@ -160,11 +160,14 @@ extension AlbumCollectionView: UICollectionViewDelegate, UICollectionViewDataSou
         }
 
         let asset = fetchResult.object(at: indexPath.item)
-        cell.configure(with: AlbumCollectionItemModel(
-            image: PhotoLibraryManager.shared.getThumbnailImageForAsset(asset, with: asset.localIdentifier),
-            isEdited: asset.isEdited(),
-            isRaw: asset.isRAW()
-        ))
+
+        PhotoLibraryManager.shared.getThumbnailImageForAsset(asset, with: asset.localIdentifier) { image in
+            cell.configure(with: AlbumCollectionItemModel(
+                image: image,
+                isEdited: asset.isEdited(),
+                isRaw: asset.isRAW()
+            ))
+        }
 
         return cell
     }

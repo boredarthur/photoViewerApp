@@ -3,6 +3,7 @@ import UIKit
 class DetailPhotoView: BaseView<DetailPhotoViewState> {
 
     var imageViewOriginalCenter: CGPoint!
+    var imageViewOriginalFrame: CGRect!
     weak var delegate: DetailPhotoViewDelegate?
     var panGestureRecognizer: UIPanGestureRecognizer!
     var swipeDownGestureRecognizer: UISwipeGestureRecognizer!
@@ -18,6 +19,7 @@ class DetailPhotoView: BaseView<DetailPhotoViewState> {
     private func configureSubiews() {
         addSubview(imageView)
         imageView.fill(container: self)
+        imageViewOriginalFrame = imageView.frame
     }
 
     private func applyStyles() {
@@ -50,8 +52,12 @@ extension DetailPhotoView {
     }
 
     @objc private func didPinch(_ sender: UIPinchGestureRecognizer) {
-        let scale = sender.scale
-        imageView.transform = CGAffineTransformScale(imageView.transform, scale, scale)
+        let scaleResult = sender.view?.transform.scaledBy(x: sender.scale, y: sender.scale)
+        guard let scale = scaleResult, scale.a > 0.95, scale.d > 0.95, scale.a < 5, scale.d < 5 else { return }
+        if scale.a <= 1 && scale.d <= 1 {
+            imageView.frame = imageViewOriginalFrame
+        }
+        sender.view?.transform = scale
         sender.scale = 1
     }
 
@@ -73,8 +79,10 @@ extension DetailPhotoView: UIGestureRecognizerDelegate {
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer
     ) -> Bool {
+        let scale = imageView.transform
         if gestureRecognizer == panGestureRecognizer &&
-            otherGestureRecognizer == swipeDownGestureRecognizer {
+            otherGestureRecognizer == swipeDownGestureRecognizer &&
+            scale.a <= 1 && scale.d <= 1 {
             return true
         }
         return false
@@ -87,6 +95,11 @@ extension DetailPhotoView {
 
     private func viewStyle(_ view: UIView) {
         view.backgroundColor = .black
+
+        swipeDownGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipeDownAction))
+        swipeDownGestureRecognizer.direction = .down
+        swipeDownGestureRecognizer.delegate = self
+        view.addGestureRecognizer(swipeDownGestureRecognizer)
     }
 
     private func imageViewStyle(_ view: UIImageView) {
@@ -102,10 +115,5 @@ extension DetailPhotoView {
 
         let rotationGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(didRotate(_:)))
         view.addGestureRecognizer(rotationGestureRecognizer)
-
-        swipeDownGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipeDownAction))
-        swipeDownGestureRecognizer.direction = .down
-        swipeDownGestureRecognizer.delegate = self
-        view.addGestureRecognizer(swipeDownGestureRecognizer)
     }
 }

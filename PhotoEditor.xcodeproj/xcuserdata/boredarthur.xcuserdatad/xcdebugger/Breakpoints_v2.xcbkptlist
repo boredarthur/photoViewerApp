@@ -30,8 +30,8 @@
             filePath = "Features/Main/Managers/PhotoLibraryManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "117"
-            endingLineNumber = "117"
+            startingLineNumber = "121"
+            endingLineNumber = "121"
             landmarkName = "removeCollection(_:completion:)"
             landmarkType = "7">
          </BreakpointContent>
